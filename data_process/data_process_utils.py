@@ -265,8 +265,7 @@ def pickle_dump(set_type, data_to_dump, output_dir):
         pickle.dump(data_to_dump, f)
 
 
-def image_dump(input_dir,output_dir):
-
+def image_dump(input_dir, output_dir):
     print('dump start')
     test = {}
     X_test, y_test = Load(input_dir + 'test/')
@@ -292,8 +291,8 @@ def image_dump(input_dir,output_dir):
 
 class DataGrouping:
     class4pretraining = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 25, 31, 33, 35, 38]
-    saved_m = [20, 0, 1, 2, 3, 4, 21, 5, 6, 7, 8, 9, 10, 11, 12, 13, 22, 14, 15, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
-               33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46]
+    saved_m = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 25, 31, 33, 35, 38, 0, 6, 17, 19, 20, 21, 22, 23,
+               24, 26, 27, 28, 29, 30, 32, 34, 36, 37, 39, 40, 41, 42]
 
     def get_map(self):
 
@@ -305,11 +304,11 @@ class DataGrouping:
         j1 = 0
         j2 = 0
         for i in range(43):
-            if (i == a[j1]) and (i < len(a)):
+            if (j1 < len(a)) and (i == a[j1]):
                 b[i] = j1
                 j1 += 1
             else:
-                b[i] = j2 + 20
+                b[i] = j2 + 21
                 j2 += 1
         return b
 
@@ -350,9 +349,7 @@ class DataGrouping:
 
                 file_dir = folder_dir + folder_name + '/' + file_name
 
-                if int(folder_name) == 42:
-                    continue
-                elif (i % scale) == 0:
+                if (i % scale) == 0:
                     des_folder_dir = des_dir + 'test/'
                 elif (i % scale) == 1:
                     des_folder_dir = des_dir + 'valid/'
@@ -364,3 +361,74 @@ class DataGrouping:
                 cv2.imwrite(des_folder_dir + str(class_id) + '_' + str(i) + '.png', image)
 
             print(folder_name + '   done')
+
+    def pretraining(self, folder_dir, des_dir):
+
+        # 删除原来的
+        for file_name in os.listdir(des_dir + 'test/'):
+            os.remove(des_dir + 'test/' + file_name)
+        for file_name in os.listdir(des_dir + 'valid/'):
+            os.remove(des_dir + 'valid/' + file_name)
+        for file_name in os.listdir(des_dir + 'train/'):
+            os.remove(des_dir + 'train/' + file_name)
+        print('removed')
+
+        folder_name_list = os.listdir(folder_dir)
+
+        # 遍历文件夹
+
+        for folder_name in folder_name_list:
+
+            # 遍历每个文件
+            file_name_list = os.listdir(folder_dir + folder_name)
+
+            for file_name in file_name_list:
+
+                class_id = int(file_name.split("_")[0])
+                if class_id < 21:
+                    shutil.copy(folder_dir + folder_name + "/" + file_name, des_dir + folder_name)
+
+    def transfer_learning(self, folder_dir, des_dir, test_dir):
+
+        # 删除原来的
+        for file_name in os.listdir(des_dir + 'test/'):
+            os.remove(des_dir + 'test/' + file_name)
+        for file_name in os.listdir(des_dir + 'valid/'):
+            os.remove(des_dir + 'valid/' + file_name)
+        for file_name in os.listdir(des_dir + 'train/'):
+            os.remove(des_dir + 'train/' + file_name)
+        print('removed')
+
+        folder_name_list = os.listdir(folder_dir)
+
+        # 遍历文件夹
+
+        for folder_name in folder_name_list:
+            if folder_name != "test":
+                # 遍历每个文件
+                file_name_list = os.listdir(folder_dir + folder_name)
+
+                m = self.get_map()
+
+                i = 0
+                for file_name in file_name_list:
+                    shutil.copy(folder_dir + folder_name + "/" + file_name, des_dir + folder_name)
+
+                    class_id = file_name.split("_")[0]
+                    class_id = class_id.split("000")[1]
+                    class_id = int(class_id)
+                    class_id = m[class_id] - 21
+                    os.rename(des_dir + folder_name + "/" + file_name,
+                              des_dir + folder_name + "/" + str(class_id) + "_" + str(i) + ".jpg")
+
+                    i += 1
+
+        i = 0
+        for file_name in os.listdir(test_dir):
+
+            class_id = int(file_name.split("_")[0])
+            if class_id > 20:
+                shutil.copy(test_dir + file_name, des_dir + 'test/')
+                new_id = class_id - 21
+                os.rename(des_dir + 'test/' + file_name, des_dir + 'test/' + str(new_id) + "_" + str(i) + ".png")
+                i += 1
