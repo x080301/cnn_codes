@@ -1,16 +1,23 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from data_process import *
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+class Workbench:
+    __data_dir__ = "D:/cnn/data/"
+    __codes_dir__ = "D:/cnn/cnn_codes/"
+
+    def run_raw_data_grouping(self):
+        g = data_process_utils.DataGrouping()
+        source_dir = self.__data_dir__ + "raw_data/"
+        des_dir = self.__data_dir__ + "renumbered_data/"
+        g.raw_data(source_dir, des_dir)
+
+    def run_dump2p4lenet(self):
+        input_dir = self.__data_dir__ + "renumbered_data/"
+        output_dir = self.__data_dir__ + "pfile4LeNet/"
+        data_process_utils.image_dump(input_dir, output_dir)
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    w = Workbench()
+    w.run_dump2p4lenet()
